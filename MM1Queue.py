@@ -22,7 +22,7 @@ first-serve basis.
 '''
 from __future__ import division #Required for floating point divison.
 import heapq as h
-import NumberGenerator as numGen
+import NumberGenerator as numGen # Required to generate exponentially distributed random numbers
 
 class Controller:
     def __init__(self, arrivalRate, averageServiceTime, simulationTime):
