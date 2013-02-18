@@ -139,8 +139,12 @@ class Monitor:
         print "Average Waiting Time: "  + str(sum(self.waitingTimes)/self.numRequests)
         print "Average Queuing Time: "  + str(sum(self.queuingTimes)/self.numRequests) 
 
-myController = Controller(60, 0.02, 200)
+# Create MM1 Queue with arrival rate of 50 requests/seconds, average service time of 0.02 seconds,
+# and total simulation time of 200 seconds.
+myController = Controller(50, 0.02, 200) 
+# Begin the simulation and start monitoring system at time 100.
 myController.runSimulation(100)
+
 myController.monitor.printReport()
             
 
