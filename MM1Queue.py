@@ -21,8 +21,8 @@ This is a single server queue so there can be at most one request being served a
 first-serve basis.
 '''
 from __future__ import division #Required for floating point divison.
-import heapq as h
-import NumberGenerator as numGen # Required to generate exponentially distributed random numbers
+from heapq import heappush, heappop
+from NumberGenerator import exponentialValue # Required to generate exponentially distributed random numbers
 
 class Controller:
     def __init__(self, arrivalRate, averageServiceTime, simulationTime):
@@ -41,9 +41,9 @@ class Controller:
     def runSimulation(self, monitorStartingTime):
         self.monitorStartingTime = monitorStartingTime
         #Add first Birth event to schedule
-        h.heappush(self.schedule, (numGen.exponentialValue(self.arrivalRate), "Birth"))
+        heappush(self.schedule, (exponentialValue(self.arrivalRate), "Birth"))
         #Add first Monitor event to schedule.
-        h.heappush(self.schedule, (monitorStartingTime, "Monitor"))
+        heappush(self.schedule, (monitorStartingTime, "Monitor"))
         
         while self.time < self.simulationTime:
             '''
@@ -57,7 +57,7 @@ class Controller:
             '''
             
             #Get the next event from the schedule
-            pair = h.heappop(self.schedule)
+            pair = heappop(self.schedule)
             self.time = pair[0]
             event = pair[1]
             self.executeEvent(event)
@@ -68,18 +68,18 @@ class Controller:
             newRequest = Request(self.time)
             self.queue.append(newRequest)
             #Schedule next birth
-            timeOfNextBirth = self.time + numGen.exponentialValue(self.arrivalRate)
-            h.heappush(self.schedule, (timeOfNextBirth, "Birth"))
+            timeOfNextBirth = self.time + exponentialValue(self.arrivalRate)
+            heappush(self.schedule, (timeOfNextBirth, "Birth"))
             
             # If queue only has one request and no requests are being served, then
             # dequeue the request, start serving request, and schedule death
             if len(self.queue) == 1 and self.beingServed == None:
-                request = self.queue.pop()
+                request = self.queue.pop(0)
                 request.setServiceTime(self.time)
                 self.beingServed = request
                 #Schedule a death
-                deathTime = self.time + numGen.exponentialValue(self.serviceRate)
-                h.heappush(self.schedule, (deathTime, "Death"))
+                deathTime = self.time + exponentialValue(self.serviceRate)
+                heappush(self.schedule, (deathTime, "Death"))
         elif event == "Death":
             recentlyDied = self.beingServed
             recentlyDied.setDeathTime(self.time)
@@ -88,12 +88,12 @@ class Controller:
             self.beingServed = None
             # Now there are no requests being served. If queue is empty, do nothing. Otherwise serve next request.
             if len(self.queue) != 0:
-                request = self.queue.pop()
+                request = self.queue.pop(0)
                 request.setServiceTime(self.time)
                 self.beingServed = request
                 #Schedule a death
-                deathTime = self.time + numGen.exponentialValue(self.serviceRate)
-                h.heappush(self.schedule, (deathTime, "Death"))
+                deathTime = self.time + exponentialValue(self.serviceRate)
+                heappush(self.schedule, (deathTime, "Death"))
         else:
             #This must be a monitor event
             requestsWaiting = len(self.queue)
@@ -102,8 +102,8 @@ class Controller:
                 requestsInSystem += 1            
             self.monitor.recordSnapshot(requestsWaiting, requestsInSystem)
             #Schedule next monitor event.
-            nextMonitorTime = self.time + numGen.exponentialValue(self.arrivalRate/2)
-            h.heappush(self.schedule, (nextMonitorTime, "Monitor"))
+            nextMonitorTime = self.time + exponentialValue(self.arrivalRate/2)
+            heappush(self.schedule, (nextMonitorTime, "Monitor"))
             
 class Request:
     def __init__(self, birthTime):
@@ -139,13 +139,13 @@ class Monitor:
         print "Average Waiting Time: "  + str(sum(self.waitingTimes)/self.numRequests)
         print "Average Queuing Time: "  + str(sum(self.queuingTimes)/self.numRequests) 
 
-# Create MM1 Queue with arrival rate of 50 requests/seconds, average service time of 0.02 seconds,
-# and total simulation time of 200 seconds.
-myController = Controller(50, 0.02, 200) 
+# Create MM1 Queue with arrival rate of 50 requests/seconds, average service time of 0.015 seconds,
+# and total simulation time of 600 seconds.
+myController = Controller(50, 0.015, 600) 
 # Begin the simulation and start monitoring system at time 100.
 myController.runSimulation(100)
-
+#Print the results of the simulation
 myController.monitor.printReport()
-            
+          
 
         
