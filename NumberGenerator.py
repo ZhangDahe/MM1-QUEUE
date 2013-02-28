@@ -1,6 +1,7 @@
 '''
-Created on Feb 14, 2013
+NumberGenerator
 
+Created on Feb 14, 2013
 @author: adrielklein
 '''
 import math
